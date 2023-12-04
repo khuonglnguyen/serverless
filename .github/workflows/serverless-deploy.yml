@@ -12,17 +12,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Get last commit message
+      id: get_commit_message
+      run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
+
     - name: Set up Node.js
+      if: contains(steps.get_commit_message.outputs.message, 'deploy-dev')
       uses: actions/setup-node@v2
       with:
         node-version: '14'
 
     - name: Install dependencies
+      if: contains(steps.get_commit_message.outputs.message, 'deploy-dev')
       run: npm install
-
-    - name: Get last commit message
-      id: get_commit_message
-      run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
 
     - name: Deploy to AWS Lambda if commit message contains 'deploy-dev'
       if: contains(steps.get_commit_message.outputs.message, 'deploy-dev')
